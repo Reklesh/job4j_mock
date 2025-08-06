@@ -7,7 +7,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import ru.checkdev.notification.domain.PersonDTO;
 import ru.checkdev.notification.telegram.config.TgConfig;
-import ru.checkdev.notification.telegram.service.TgAuthCallWebClint;
+import ru.checkdev.notification.telegram.service.TgAuthCallWebClient;
 
 import java.util.Calendar;
 
@@ -24,7 +24,7 @@ public class RegAction implements Action {
     private static final String ERROR_OBJECT = "error";
     private static final String URL_AUTH_REGISTRATION = "/registration";
     private final TgConfig tgConfig = new TgConfig("tg/", 8);
-    private final TgAuthCallWebClint authCallWebClint;
+    private final TgAuthCallWebClient authCallWebClient;
     private final String urlSiteAuth;
 
     @Override
@@ -65,7 +65,7 @@ public class RegAction implements Action {
                 Calendar.getInstance());
         Object result;
         try {
-            result = authCallWebClint.doPost(URL_AUTH_REGISTRATION, person).block();
+            result = authCallWebClient.doPost(URL_AUTH_REGISTRATION, person).block();
         } catch (Exception e) {
             log.error("WebClient doPost error: {}", e.getMessage());
             text = "Сервис не доступен попробуйте позже" + sl

@@ -2,6 +2,7 @@ package ru.checkdev.notification.telegram.service;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -11,6 +12,7 @@ import ru.checkdev.notification.domain.PersonDTO;
 
 @Service
 @Slf4j
+@Setter
 public class TgAuthCallWebClient {
     private WebClient webClient;
 
