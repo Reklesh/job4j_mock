@@ -27,6 +27,7 @@ import java.util.Map;
 @Component
 @Slf4j
 public class TgRun {
+
     private final TgAuthCallWebClient tgAuthCallWebClient;
     @Value("${tg.username}")
     private String username;
@@ -43,7 +44,11 @@ public class TgRun {
     public void initTg() {
         Map<String, Action> actionMap = Map.of(
                 "/start", new InfoAction(List.of(
-                        "/start", "/new")),
+                        "/start - напечатать список доступных команд",
+                        "/new - регистрация нового пользователя",
+                        "/check - выдать ФИО и почту, привязанную к этому аккаунту",
+                        "/bind - ввести логин и пароль, чтобы привязать аккаунт telegram к платформе CheckDev",
+                        "/unbind - ввести логин и пароль, чтобы отвязать аккаунт telegram от платформы CheckDev")),
                 "/new", new RegAction(tgAuthCallWebClient, urlSiteAuth)
         );
         try {

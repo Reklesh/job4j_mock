@@ -1,12 +1,16 @@
 package ru.checkdev.notification.telegram;
 
+import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.checkdev.notification.telegram.action.Action;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -16,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Dmitry Stepanov, user Dmitry
  * @since 12.09.2023
  */
+@Slf4j
 public class BotMenu extends TelegramLongPollingBot {
     private final Map<String, String> bindingBy = new ConcurrentHashMap<>();
     private final Map<String, Action> actions;
@@ -46,21 +51,25 @@ public class BotMenu extends TelegramLongPollingBot {
             var chatId = update.getMessage().getChatId().toString();
             if (actions.containsKey(key)) {
                 var msg = actions.get(key).handle(update.getMessage());
-                bindingBy.put(chatId, key);
+                if (!Objects.equals(key, "/start")) {
+                    bindingBy.put(chatId, key);
+                }
                 send(msg);
             } else if (bindingBy.containsKey(chatId)) {
                 var msg = actions.get(bindingBy.get(chatId)).callback(update.getMessage());
                 bindingBy.remove(chatId);
                 send(msg);
+            } else {
+                send(new SendMessage(chatId, "Команда не поддерживается! Список доступных команд: /start"));
             }
         }
     }
 
-    private void send(BotApiMethod msg) {
+    private void send(BotApiMethod<Message> msg) {
         try {
             execute(msg);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            log.error("Telegram bot: {}, ERROR {}", username, e.getMessage());
         }
     }
 }
