@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -46,12 +47,12 @@ public class PersonService {
     private final Logger log = LoggerFactory.getLogger(PersonService.class);
     private final PasswordEncoder encoding = new BCryptPasswordEncoder();
     private final PersonRepository persons;
-    private final Messenger msg;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Autowired
-    public PersonService(final PersonRepository persons, final Messenger msg) {
+    public PersonService(final PersonRepository persons, KafkaTemplate<String, Object> kafkaTemplate) {
         this.persons = persons;
-        this.msg = msg;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     public Optional<Profile> reg(Profile profile) {
@@ -70,7 +71,8 @@ public class PersonService {
                 result = Optional.of(this.persons.save(profile));
                 Map<String, Object> keys = new HashMap<>();
                 keys.put("key", profile.getKey());
-                this.msg.send(new Notify(profile.getEmail(), keys, Notify.Type.REG.name()));
+                Notify notify = new Notify(profile.getEmail(), keys, Notify.Type.REG.name());
+                kafkaTemplate.send("notifications-topic", notify);
             }
         } catch (DataIntegrityViolationException e) {
             log.error("not unique email {}", profile.getEmail());
@@ -138,7 +140,8 @@ public class PersonService {
             this.persons.save(find);
             Map<String, Object> keys = new HashMap<>();
             keys.put("password", password);
-            this.msg.send(new Notify(profile.getEmail(), keys, Notify.Type.FORGOT.name()));
+            Notify notify = new Notify(profile.getEmail(), keys, Notify.Type.FORGOT.name());
+            kafkaTemplate.send("notifications-topic", notify);
             result = Optional.of(profile);
         }
         return result;

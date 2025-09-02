@@ -22,15 +22,9 @@ public class TemplateController {
 
     private final TemplateService templates;
 
-    private final NotificationService notifications;
-
-    private final String access;
-
     @Autowired
-    public TemplateController(@Value("${access.key}") String access, final TemplateService templates, NotificationService notifications) {
+    public TemplateController(final TemplateService templates) {
         this.templates = templates;
-        this.notifications = notifications;
-        this.access = access;
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -61,14 +55,6 @@ public class TemplateController {
     @PostMapping("/send")
     public Notify send(@RequestBody Notify notify) {
         return this.templates.send(notify);
-    }
-
-    @PostMapping("/queue")
-    public Notify queue(@RequestParam("access") String access, @RequestBody Notify notify) {
-        if (this.access.equals(access)) {
-            this.notifications.put(notify);
-        }
-        return notify;
     }
 
     @GetMapping("/ping")

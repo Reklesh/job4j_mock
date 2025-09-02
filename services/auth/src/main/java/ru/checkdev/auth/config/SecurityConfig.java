@@ -36,7 +36,6 @@ public class SecurityConfig {
                 "/person/by/email",
                 "/img",
                 "/person/profile",
-                "/template/queue",
                 "/template/ping",
                 "/profiles/**",
                 "/swagger-ui/**",

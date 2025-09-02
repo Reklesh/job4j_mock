@@ -1,5 +1,7 @@
 package ru.checkdev.auth.domain;
 
+import lombok.NoArgsConstructor;
+
 import java.util.Map;
 import java.util.Objects;
 
@@ -8,6 +10,7 @@ import java.util.Objects;
  * @version $Id$
  * @since 0.1
  */
+@NoArgsConstructor
 public class Notify {
     private String email;
     private Map<String, ?> keys;
