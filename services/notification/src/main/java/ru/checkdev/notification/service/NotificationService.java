@@ -3,7 +3,7 @@ package ru.checkdev.notification.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
-import ru.checkdev.notification.domain.Notify;
+import ru.checkdev.common.Notify;
 
 import javax.annotation.PreDestroy;
 import java.util.concurrent.Executors;

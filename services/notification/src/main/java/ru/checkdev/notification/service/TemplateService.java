@@ -7,7 +7,7 @@ import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.checkdev.notification.config.MailConfiguration;
-import ru.checkdev.notification.domain.Notify;
+import ru.checkdev.common.Notify;
 import ru.checkdev.notification.domain.Template;
 import ru.checkdev.notification.repository.SettingRepository;
 import ru.checkdev.notification.repository.TemplateRepository;

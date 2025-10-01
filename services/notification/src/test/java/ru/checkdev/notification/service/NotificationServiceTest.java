@@ -5,7 +5,7 @@ package ru.checkdev.notification.service;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import ru.checkdev.notification.domain.Notify;
+import ru.checkdev.common.Notify;
 
 
 /**

@@ -16,7 +16,7 @@ public interface TopicRepository extends CrudRepository<Topic, Integer> {
 
     List<Topic> findByCategoryIdOrderByPositionAsc(Integer categoryId);
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     @Modifying
     @Query("update cd_topic t set t.total = t.total + 1 where t.id=:id")
     void incrementTotal(@Param("id") int id);

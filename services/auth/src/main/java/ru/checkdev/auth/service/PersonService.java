@@ -22,11 +22,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-import ru.checkdev.auth.domain.Notify;
 import ru.checkdev.auth.domain.Profile;
 import ru.checkdev.auth.domain.Photo;
 import ru.checkdev.auth.domain.Role;
 import ru.checkdev.auth.repository.PersonRepository;
+import ru.checkdev.common.Notify;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;

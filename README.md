@@ -203,4 +203,21 @@ Smoke-тесты:
 - Mock сервис - http://localhost:9912/swagger-ui/index.html
 - Notification сервис - http://localhost:9920/swagger-ui/index.html
 
+#### Запуск приложения через Docker compose
+
++ Скачать и установить Docker Desktop для Windows.
++ Запустить Docker Desktop и убедиться, что он работает, выполнив в PowerShell(или cmd) команды:
+```
+ docker --version
+ docker compose version
+```
++ Склонировать проект, выполнив команду:
+```
+git clone -b task#540 --single-branch https://github.com/Reklesh/job4j_mock.git
+```
++ Перейти в директорию проекта, команда: `cd job4j_mock`.
++ Собрать образы всех сервисов проекта, команда: `docker compose build`.
++ Запустить образы, команда: `docker compose up`.
++ Дождаться полного запуска, открыть браузер и перейти по адресу: `http://localhost:8080`.
++ Для остановки и удаления всех контейнеров выполнить команду: `docker compose down`.
 ___

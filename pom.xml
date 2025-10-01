@@ -10,6 +10,7 @@
     <name>CheckDev</name>
 
     <modules>
+        <module>common-dto</module>
         <module>services/auth</module>
         <module>services/desc</module>
         <module>services/mock</module>

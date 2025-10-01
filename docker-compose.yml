@@ -1,0 +1,148 @@
+services:
+  # ============ AUTH SERVICE ============
+  db-auth:
+    image: postgres:17
+    container_name: db-auth
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: auth
+    volumes:
+      - db-auth-data:/var/lib/postgresql/data
+    restart: always
+
+  auth:
+    build:
+      context: .
+      dockerfile: services/auth/Dockerfile
+    container_name: auth
+    depends_on:
+      - db-auth
+      - kafka
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-auth:5432/auth
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+  # ============ DESC SERVICE ============
+  db-desc:
+    image: postgres:17
+    container_name: db-desc
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: desc
+    volumes:
+      - db-desc-data:/var/lib/postgresql/data
+    restart: always
+
+  desc:
+    build: ./services/desc
+    container_name: desc
+    depends_on:
+      - db-desc
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-desc:5432/desc
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+
+  # ============ MOCK SERVICE ============
+  db-mock:
+    image: postgres:17
+    container_name: db-mock
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mock
+    volumes:
+      - db-mock-data:/var/lib/postgresql/data
+    restart: always
+
+  mock:
+    build: ./services/mock
+    container_name: mock
+    depends_on:
+      - db-mock
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-mock:5432/mock
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+
+  # ============ NOTIFICATION SERVICE ============
+  db-notification:
+    image: postgres:17
+    container_name: db-notification
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: notification
+    volumes:
+      - db-notification-data:/var/lib/postgresql/data
+    restart: always
+
+  notification:
+    build:
+      context: .
+      dockerfile: services/notification/Dockerfile
+    container_name: notification
+    depends_on:
+      - db-notification
+      - auth
+      - kafka
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-notification:5432/notification
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SERVER_AUTH: http://auth:9900
+      SERVER_SITE_URL_LOGIN: http://site:8080/login
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+  # ============ SITE SERVICE ============
+  site:
+    build: ./services/site
+    container_name: site
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth
+      - mock
+      - desc
+      - notification
+    environment:
+      SECURITY_OAUTH2_TOKENURI: http://auth:9900/oauth/token
+      SERVER_AUTH: http://auth:9900
+      SERVER_AUTH_PING: http://auth:9900/ping
+      SERVICE_MOCK: http://mock:9912
+      SERVICE_DESC: http://desc:9902
+      SERVICE_NOTIFICATION: http://notification:9920
+
+  # ============ KAFKA & ZOOKEEPER ============
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    restart: always
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    restart: always
+
+  # ============ VOLUMES ============
+volumes:
+  db-auth-data:
+  db-desc-data:
+  db-mock-data:
+  db-notification-data:

@@ -1,0 +1,78 @@
+package ru.checkdev.site.controller;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import ru.checkdev.site.dto.CategoryDTO;
+import ru.checkdev.site.dto.InterviewDTO;
+import ru.checkdev.site.dto.ProfileDTO;
+import ru.checkdev.site.dto.TopicDTO;
+import ru.checkdev.site.service.*;
+
+import javax.servlet.http.HttpServletRequest;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static ru.checkdev.site.controller.RequestResponseTools.getToken;
+
+@Controller
+@AllArgsConstructor
+@Slf4j
+public class IndexController {
+
+    private final CategoriesService categoriesService;
+    private final InterviewsService interviewsService;
+    private final AuthService authService;
+    private final NotificationService notifications;
+    private final ProfilesService profilesService;
+    private final TopicsService topicsService;
+
+    @GetMapping({"/", "index"})
+    public String getIndexPage(Model model, HttpServletRequest req) throws JsonProcessingException {
+        RequestResponseTools.addAttrBreadcrumbs(model,
+                "Главная", "/"
+        );
+        List<CategoryDTO> categories = List.of();
+        try {
+            categories = categoriesService.getMostPopular();
+            model.addAttribute("categories", categories);
+            var token = getToken(req);
+            if (token != null) {
+                var userInfo = authService.userInfo(token);
+                model.addAttribute("userInfo", userInfo);
+                model.addAttribute("userDTO", notifications.findCategoriesByUserId(
+                        userInfo.getId()));
+                RequestResponseTools.addAttrCanManage(model, userInfo);
+            }
+        } catch (Exception e) {
+            log.error("Remote application not responding. Error: {}. {}, ", e.getCause(), e.getMessage());
+        }
+        List<InterviewDTO> interviews = interviewsService.getByType(1);
+        Set<ProfileDTO> userList = interviews.stream()
+                .map(x -> profilesService.getProfileById(x.getSubmitterId()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toSet());
+        model.addAttribute("new_interviews", interviews);
+        model.addAttribute("users", userList);
+
+        List<TopicDTO> topicList = new ArrayList<>();
+        for (InterviewDTO interview : interviews) {
+            TopicDTO byId = topicsService.getById(interview.getTopicId());
+            topicList.add(byId);
+        }
+        Map<Integer, Long> newCounts = categories.stream()
+                .collect(Collectors.toMap(
+                        CategoryDTO::getId,
+                        category -> topicList.stream()
+                                .filter(topic -> topic.getCategory().getId() == category.getId())
+                                .count()
+                ));
+        model.addAttribute("newCounts", newCounts);
+        return "index";
+    }
+}
